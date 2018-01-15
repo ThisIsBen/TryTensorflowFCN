@@ -41,14 +41,17 @@ from tf_image_segmentation.utils.training import get_valid_logits_and_labels
 from tf_image_segmentation.utils.augmentation import (distort_randomly_image_color,
                                                       flip_randomly_left_right_image_with_annotation,
                                                       scale_randomly_image_with_annotation_with_fixed_size_output)
-epochs=1
+epochs=3
+vesselBatch_size=1#4 outOfRangeError
 numOfTrainingImage=2056
+#numOfTrainingImage=35 #fail 30
 image_train_size = [384, 384]
 number_of_classes = 21
 #trying to train pascal dataset
 '''
 tfrecord_filename = 'pascal_augmented_train.tfrecords'
 '''
+   
 #trying to train 3DBuilderVesselSemanticSeg dataset
 tfrecord_filename = '3DBuilderVessel_augmented_train.tfrecords'
 
@@ -77,7 +80,7 @@ resized_image, resized_annotation = scale_randomly_image_with_annotation_with_fi
 resized_annotation = tf.squeeze(resized_annotation)
 
 image_batch, annotation_batch = tf.train.shuffle_batch( [resized_image, resized_annotation],
-                                             batch_size=1,
+                                             batch_size=vesselBatch_size,
                                              capacity=3000,
                                              num_threads=2,
                                              min_after_dequeue=1000)
@@ -158,19 +161,19 @@ with tf.Session()  as sess:
                                                       merged_summary_op,
                                                       train_step ])
         
-        print("Current loss: " + str(cross_entropy))
+        print("step :" + str(i) +" Current loss: " + str(cross_entropy))
         
         summary_string_writer.add_summary(summary_string, i)
         
         if i % numOfTrainingImage == 0:
-            save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel.ckpt")
+            save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_Retrained.ckpt")
             print("Model saved in file: %s" % save_path)
             
         
     coord.request_stop()
     coord.join(threads)
     
-    save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel.ckpt")
+    save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_Retrained.ckpt")
     print("Model saved in file: %s" % save_path)
     
 summary_string_writer.close()

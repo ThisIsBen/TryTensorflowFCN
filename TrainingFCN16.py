@@ -30,8 +30,11 @@ from tf_image_segmentation.utils.training import get_valid_logits_and_labels
 from tf_image_segmentation.utils.augmentation import (distort_randomly_image_color,
                                                       flip_randomly_left_right_image_with_annotation,
                                                       scale_randomly_image_with_annotation_with_fixed_size_output)
-epochs=1
+epochs=3 #3 10 outofRange fail
+vesselBatch_size=1
 numOfTrainingImage=2056
+gpu_memory_fraction=0.5
+capacity=2000# 3000 OutOFRangeError
 image_train_size = [384, 384]
 number_of_classes = 21
 
@@ -39,13 +42,19 @@ number_of_classes = 21
 '''
 tfrecord_filename = 'pascal_augmented_train.tfrecords'
 '''
+
 #trying to train 3DBuilderVesselSemanticSeg dataset
 tfrecord_filename = '3DBuilderVessel_augmented_train.tfrecords'
+
 
 pascal_voc_lut = pascal_segmentation_lut()
 class_labels = list(pascal_voc_lut.keys())
 
+
+
 fcn_32s_checkpoint_path = './3DBuilderVesselModelForFCN/model_fcn32s_3DVessel.ckpt'
+#fcn_32s_checkpoint_path = './ModelForFcn/model_fcn32s_ben.ckpt'
+
 '''
 filename_queue = tf.train.string_input_producer(
     [tfrecord_filename], num_epochs=10)
@@ -65,11 +74,19 @@ resized_image, resized_annotation = scale_randomly_image_with_annotation_with_fi
 
 resized_annotation = tf.squeeze(resized_annotation)
 
+'''
 image_batch, annotation_batch = tf.train.shuffle_batch( [resized_image, resized_annotation],
                                              batch_size=1,
                                              capacity=3000,
                                              num_threads=2,
                                              min_after_dequeue=1000)
+'''
+image_batch, annotation_batch = tf.train.shuffle_batch( [resized_image, resized_annotation],
+                                             batch_size=vesselBatch_size,
+                                             capacity=capacity,
+                                             num_threads=2,
+                                             min_after_dequeue=1000)
+
 
 upsampled_logits_batch, fcn_32s_variables_mapping = FCN_16s(image_batch_tensor=image_batch,
                                                            number_of_classes=number_of_classes,
@@ -129,7 +146,17 @@ model_variables = slim.get_model_variables()
 saver = tf.train.Saver(model_variables)
 
 
-with tf.Session()  as sess:
+#gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)  
+
+#to limit the usage of GPU memory to avoid error( InternalError: Dst tensor is not initialized.)
+#config = tf.ConfigProto()  
+#config.gpu_options.allow_growth=True  
+config = tf.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = gpu_memory_fraction
+
+
+#with tf.Session()  as sess:
+with tf.Session(config=config)  as sess:
     
     sess.run(combined_op)
     

@@ -30,8 +30,11 @@ from tf_image_segmentation.utils.training import get_valid_logits_and_labels
 from tf_image_segmentation.utils.augmentation import (distort_randomly_image_color,
                                                       flip_randomly_left_right_image_with_annotation,
                                                       scale_randomly_image_with_annotation_with_fixed_size_output)
-epochs=1
+epochs=3
+vesselBatch_size=1
 numOfTrainingImage=2056
+gpu_memory_fraction=0.5
+capacity=2000# 3000 OutOFRangeError
 image_train_size = [384, 384]
 number_of_classes = 21
 
@@ -64,8 +67,8 @@ resized_image, resized_annotation = scale_randomly_image_with_annotation_with_fi
 resized_annotation = tf.squeeze(resized_annotation)
 
 image_batch, annotation_batch = tf.train.shuffle_batch( [resized_image, resized_annotation],
-                                             batch_size=1,
-                                             capacity=3000,
+                                             batch_size=vesselBatch_size,
+                                             capacity=capacity,
                                              num_threads=2,
                                              min_after_dequeue=1000)
 
@@ -127,7 +130,11 @@ model_variables = slim.get_model_variables()
 saver = tf.train.Saver(model_variables)
 
 
-with tf.Session()  as sess:
+#to limit the usage of GPU memory to avoid error( InternalError: Dst tensor is not initialized.)
+config = tf.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = gpu_memory_fraction
+
+with tf.Session(config=config)  as sess:
     
     sess.run(combined_op)
     init_fn(sess)

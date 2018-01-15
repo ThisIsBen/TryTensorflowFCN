@@ -14,8 +14,11 @@ sys.path.append("tf-image-segmentation/")
 sys.path.append("models/slim/")
 
 #fcn_16s_checkpoint_path = 'TrainedModel\fcn_8s\fcn_8s_checkpoint\model_fcn8s_final.ckpt'
+
 fcn_16s_checkpoint_path = \
     'TrainedModel/fcn_8s/fcn_8s_checkpoint/model_fcn8s_final.ckpt'
+
+
 #os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
@@ -63,6 +66,10 @@ with tf.Session() as sess:
     sess.run(initializer)
 
     saver.restore(sess, "TrainedModel/fcn_8s/fcn_8s_checkpoint/model_fcn8s_final.ckpt")
+    
+    #saver.restore(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel.ckpt")
+    
+    
     
     image_np, pred_np = sess.run([image_tensor, pred], feed_dict=feed_dict_to_use)
     
