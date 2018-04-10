@@ -39,8 +39,8 @@ tfrecord_filename = '3DBuilderVessel_augmented_val_withoutNoise.tfrecords'
      
 numOfValidatingImage=384
 #numOfValidatingImage=525
-number_of_classes = 21
-#number_of_classes = 2
+#number_of_classes = 21
+number_of_classes = 2
 
 filename_queue = tf.train.string_input_producer(
     [tfrecord_filename], num_epochs=1)
@@ -85,7 +85,7 @@ with tf.Session() as sess:
 
     #saver.restore(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_withoutNoise.ckpt")
     
-    saver.restore(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_30Epochs_BaseLine.ckpt")
+    saver.restore(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_30Epochs_3Classes_ValidPad.ckpt")
     
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(coord=coord)
@@ -98,7 +98,7 @@ with tf.Session() as sess:
         
        
         # Display the image and the segmentation result
-        if i ==10:
+        if i ==30:
             upsampled_predictions = pred_np.squeeze()
             plt.imshow(image_np)
             plt.show()

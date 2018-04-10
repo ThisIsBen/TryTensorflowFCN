@@ -43,15 +43,15 @@ from tf_image_segmentation.utils.augmentation import (distort_randomly_image_col
                                                   scale_randomly_image_with_annotation_with_fixed_size_output)
 
 epochs=30
-vesselBatch_size=8
+vesselBatch_size=32
 '''
 vesselBatch_size=1
 '''
 numOfTrainingImage=1545
 numOfTrainingIteration=int(numOfTrainingImage/vesselBatch_size)
 gpu_memory_fraction=0.7 #restrict the program from using GPU memory up to 70%.
-image_train_size = [384, 384 ] #[384, 384]
-number_of_classes = 21 #because Pascal dataset has 21 classes
+image_train_size = [224, 224 ] #[384, 384]
+number_of_classes = 2 #because Pascal dataset has 21 classes
 
 base_lr=0.000001 #default lr
 '''
@@ -194,20 +194,21 @@ with tf.Session(config=config)  as sess:
         
         summary_string_writer.add_summary(summary_string, i)
         
-        #save model when finish each iteration
-        if i % numOfTrainingIteration == 0:
-            save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_30Epochs_BaseLine.ckpt")
-            print("Model saved in file: %s" % save_path)
-            
+        #record cross entropy loss  when finishing each epoch
+        if i % numOfTrainingIteration == 0: 
             #append cross entropy of each epoch to the accumulation list for plot after training
             crossEntropyAccumList.append(cross_entropy)
         
+        #save model when finishing each 10 epochs
+        if i % (numOfTrainingIteration*10) == 0:
+            save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_30Epochs_3Classes_ValidPad_epochNo"+str(i/(numOfTrainingIteration*10)+1)+".ckpt")
+            print("Model saved in file: %s" % save_path)
         
     coord.request_stop()
     coord.join(threads)
     
     #save model when training is over.
-    save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_30Epochs_BaseLine.ckpt")
+    save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_30Epochs_3Classes_ValidPad.ckpt")
     print("Model saved in file: %s" % save_path)
     
 summary_string_writer.close()

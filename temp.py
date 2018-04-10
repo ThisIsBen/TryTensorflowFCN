@@ -27,7 +27,8 @@ from tf_image_segmentation.models.fcn_8s import FCN_8s
 from tf_image_segmentation.utils.inference import adapt_network_for_any_size_input
 from tf_image_segmentation.utils.pascal_voc import pascal_segmentation_lut
 
-number_of_classes = 21
+#number_of_classes = 21
+number_of_classes = 2
 
 #image_filename = '3DBuilderVesselSemanticSegDataSet/3DBuilderVesselRecognition/JPEGImages/croppedImage_a_vm_2166_1.jpg'
 image_filename = 'vessel/infatvessel2.jpg'
@@ -70,7 +71,7 @@ with tf.Session() as sess:
     #based on Pascal trained FCN16
     #saver.restore(sess,  "./3DBuilderVesselModelForFCN/model_fcn8s_3DVessel_BasedOnPascalFCN16.ckpt")
     
-    saver.restore(sess,  "./3DBuilderVesselModelForFCN/model_fcn8s_3DVessel_FCN32Momen.ckpt")
+    saver.restore(sess,  "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_30Epochs_3Classes.ckpt")
     
     
     
