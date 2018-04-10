@@ -1,4 +1,4 @@
-%matplotlib inline
+#%matplotlib inline
 
 import tensorflow as tf
 import numpy as np
@@ -10,7 +10,10 @@ from matplotlib import pyplot as plt
 sys.path.append("tf-image-segmentation/")
 sys.path.append("models/slim/")
 
-fcn_16s_checkpoint_path = './3DBuilderVesselModelForFCN/model_fcn16s_3DVessel.ckpt'
+#fcn_16s_checkpoint_path = './3DBuilderVesselModelForFCN/model_fcn16s_3DVessel_Momen.ckpt'
+
+fcn_16s_checkpoint_path = './3DBuilderVesselModelForFCN/model_fcn16s_3DVessel_70Epochs.ckpt'
+
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
@@ -26,9 +29,10 @@ from tf_image_segmentation.utils.visualization import visualize_segmentation_ada
 
 pascal_voc_lut = pascal_segmentation_lut()
 
-tfrecord_filename = '3DBuilderVessel_augmented_val.tfrecords'
+tfrecord_filename = '3DBuilderVessel_augmented_val_withoutNoise.tfrecords'
 
-numOfValidatingImage=525
+#numOfValidatingImage=525
+numOfValidatingImage=384
 number_of_classes = 21
 
 filename_queue = tf.train.string_input_producer(
@@ -68,13 +72,13 @@ with tf.Session() as sess:
     
     sess.run(initializer)
 
-    saver.restore(sess, "./3DBuilderVesselModelForFCN/model_fcn16s_3DVessel.ckpt")
+    saver.restore(sess, "./3DBuilderVesselModelForFCN/model_fcn16s_3DVessel_70Epochs.ckpt")
     
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(coord=coord)
     
     # There are 904 images in restricted validation dataset
-    for i in xrange(numOfValidatingImage):
+    for i in range(numOfValidatingImage):
         
         image_np, annotation_np, pred_np, tmp = sess.run([image, annotation, pred, update_op])
         

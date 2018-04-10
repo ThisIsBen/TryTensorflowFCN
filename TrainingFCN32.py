@@ -2,7 +2,7 @@
 """
 Created on Thu Dec 28 09:58:10 2017
 
-@author: chiu
+@author: Ben
 """
 
 
@@ -40,24 +40,37 @@ from tf_image_segmentation.utils.training import get_valid_logits_and_labels
 
 from tf_image_segmentation.utils.augmentation import (distort_randomly_image_color,
                                                       flip_randomly_left_right_image_with_annotation,
-                                                      scale_randomly_image_with_annotation_with_fixed_size_output)
-epochs=3
-vesselBatch_size=1#4 outOfRangeError
-numOfTrainingImage=2056
-#numOfTrainingImage=35 #fail 30
-image_train_size = [384, 384]
-number_of_classes = 21
+                                                  scale_randomly_image_with_annotation_with_fixed_size_output)
+
+epochs=30
+vesselBatch_size=8
+'''
+vesselBatch_size=1
+'''
+numOfTrainingImage=1545
+numOfTrainingIteration=int(numOfTrainingImage/vesselBatch_size)
+gpu_memory_fraction=0.7 #restrict the program from using GPU memory up to 70%.
+image_train_size = [384, 384 ] #[384, 384]
+number_of_classes = 21 #because Pascal dataset has 21 classes
+
+base_lr=0.000001 #default lr
+'''
+base_lr=1e-10
+'''
+
+
+ 
 #trying to train pascal dataset
 '''
 tfrecord_filename = 'pascal_augmented_train.tfrecords'
 '''
    
 #trying to train 3DBuilderVesselSemanticSeg dataset
-tfrecord_filename = '3DBuilderVessel_augmented_train.tfrecords'
+tfrecord_filename = '3DBuilderVessel_augmented_train_withoutNoise.tfrecords'
 
 
 pascal_voc_lut = pascal_segmentation_lut()
-class_labels = list(pascal_voc_lut) 
+class_labels = list(pascal_voc_lut) #[0,1,2~20]
 
 '''
 filename_queue = tf.train.string_input_producer(
@@ -67,16 +80,18 @@ filename_queue = tf.train.string_input_producer(
 filename_queue = tf.train.string_input_producer(
     [tfrecord_filename], num_epochs=epochs)
 
+#read training images pairs(raw images, annoted images)
 image, annotation = read_tfrecord_and_decode_into_image_annotation_pair_tensors(filename_queue)
 
-# Various data augmentation stages
+# Randomly flip the training images
 image, annotation = flip_randomly_left_right_image_with_annotation(image, annotation)
 
-# image = distort_randomly_image_color(image)
 
+
+# Randomly scale the training images
 resized_image, resized_annotation = scale_randomly_image_with_annotation_with_fixed_size_output(image, annotation, image_train_size)
 
-
+#Removes dimensions of size 1 from the shape of a tensor. 
 resized_annotation = tf.squeeze(resized_annotation)
 
 image_batch, annotation_batch = tf.train.shuffle_batch( [resized_image, resized_annotation],
@@ -108,11 +123,12 @@ pred = tf.argmax(upsampled_logits_batch, dimension=3)
 probabilities = tf.nn.softmax(upsampled_logits_batch)
 
 
+#use Adam Optimizer
 with tf.variable_scope("adam_vars"):
-    train_step = tf.train.AdamOptimizer(learning_rate=0.000001).minimize(cross_entropy_sum)
+         train_step = tf.train.AdamOptimizer(learning_rate=base_lr).minimize(cross_entropy_sum)
 
 
-# Variable's initialization functions
+# VGG16 Variable's initialization functions
 vgg_16_without_fc8_variables_mapping = extract_vgg_16_mapping_without_fc8(vgg_16_variables_mapping)
 
 
@@ -141,8 +157,15 @@ combined_op = tf.group(local_vars_init_op, global_vars_init_op)
 model_variables = slim.get_model_variables()
 saver = tf.train.Saver(model_variables)
 
+#restrict the maximum usage of gpu memory
+config = tf.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = gpu_memory_fraction
 
-with tf.Session()  as sess:
+
+#with tf.Session()  as sess:
+#Open a session for training using Adam Optimizer
+with tf.Session(config=config)  as sess:
+
     
     sess.run(combined_op)
     init_fn(sess)
@@ -153,8 +176,10 @@ with tf.Session()  as sess:
     # 10 epochs
     #for i in range(11127 * 10):
     
+    #create cross entropy accumulation list for plot after training 
+    crossEntropyAccumList=[]
     
-    for i in range(numOfTrainingImage * epochs   ):
+    for i in range(numOfTrainingIteration * epochs   ):
         
     
         cross_entropy, summary_string, _ = sess.run([ cross_entropy_sum,
@@ -163,17 +188,26 @@ with tf.Session()  as sess:
         
         print("step :" + str(i) +" Current loss: " + str(cross_entropy))
         
+        
+        
+        
+        
         summary_string_writer.add_summary(summary_string, i)
         
-        if i % numOfTrainingImage == 0:
-            save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_Retrained.ckpt")
+        #save model when finish each iteration
+        if i % numOfTrainingIteration == 0:
+            save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_30Epochs_BaseLine.ckpt")
             print("Model saved in file: %s" % save_path)
             
+            #append cross entropy of each epoch to the accumulation list for plot after training
+            crossEntropyAccumList.append(cross_entropy)
+        
         
     coord.request_stop()
     coord.join(threads)
     
-    save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_Retrained.ckpt")
+    #save model when training is over.
+    save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_30Epochs_BaseLine.ckpt")
     print("Model saved in file: %s" % save_path)
     
 summary_string_writer.close()

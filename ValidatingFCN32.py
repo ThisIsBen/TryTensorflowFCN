@@ -1,4 +1,7 @@
-%matplotlib inline
+#%matplotlib inline
+from IPython import get_ipython
+get_ipython().run_line_magic('matplotlib', 'inline')
+
 
 import tensorflow as tf
 import numpy as np
@@ -22,7 +25,7 @@ slim = tf.contrib.slim
 
 from tf_image_segmentation.models.fcn_32s import FCN_32s
 
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 from tf_image_segmentation.utils.pascal_voc import pascal_segmentation_lut
 from tf_image_segmentation.utils.tf_records import read_tfrecord_and_decode_into_image_annotation_pair_tensors
 from tf_image_segmentation.utils.inference import adapt_network_for_any_size_input
@@ -30,11 +33,14 @@ from tf_image_segmentation.utils.visualization import visualize_segmentation_ada
 
 pascal_voc_lut = pascal_segmentation_lut()
 
-tfrecord_filename = '3DBuilderVessel_augmented_val.tfrecords'
+print(pascal_voc_lut)
+tfrecord_filename = '3DBuilderVessel_augmented_val_withoutNoise.tfrecords'
 
      
-numOfValidatingImage=525
+numOfValidatingImage=384
+#numOfValidatingImage=525
 number_of_classes = 21
+#number_of_classes = 2
 
 filename_queue = tf.train.string_input_producer(
     [tfrecord_filename], num_epochs=1)
@@ -58,6 +64,8 @@ pred, fcn_32s_variables_mapping = FCN_32s(image_batch_tensor=image_batch_tensor,
 # Take away the masked out values from evaluation
 weights = tf.to_float( tf.not_equal(annotation_batch_tensor, 255) )
 
+print(weights)
+
 # Define the accuracy metric: Mean Intersection Over Union
 miou, update_op = slim.metrics.streaming_mean_iou(predictions=pred,
                                                    labels=annotation_batch_tensor,
@@ -72,23 +80,30 @@ saver = tf.train.Saver()
 with tf.Session() as sess:
     
     sess.run(initializer)
+    
+    #saver.restore(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel.ckpt")
 
-    saver.restore(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel.ckpt")
+    #saver.restore(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_withoutNoise.ckpt")
+    
+    saver.restore(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_30Epochs_BaseLine.ckpt")
     
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(coord=coord)
     
     # There are 904 images in restricted validation dataset
     #for i in xrange(904):
-    for i in xrange(numOfValidatingImage):
+    for i in range(numOfValidatingImage):
         
         image_np, annotation_np, pred_np, tmp = sess.run([image, annotation, pred, update_op])
         
+       
         # Display the image and the segmentation result
-        # upsampled_predictions = pred_np.squeeze()
-        #plt.imshow(image_np)
-        #plt.show()
-        #visualize_segmentation_adaptive(upsampled_predictions, pascal_voc_lut)
+        if i ==10:
+            upsampled_predictions = pred_np.squeeze()
+            plt.imshow(image_np)
+            plt.show()
+            visualize_segmentation_adaptive(upsampled_predictions, pascal_voc_lut)
+        
         
     coord.request_stop()
     coord.join(threads)

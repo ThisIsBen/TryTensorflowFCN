@@ -41,7 +41,7 @@ write_image_annotation_pairs_to_tfrecord(filename_pairs=overall_train_image_anno
 '''
 
 write_image_annotation_pairs_to_tfrecord(filename_pairs=overall_val_image_annotation_filename_pairs,
-                                         tfrecords_filename='3DBuilderVessel_augmented_val.tfrecords')
+                                         tfrecords_filename='3DBuilderVessel_augmented_val_withoutNoise.tfrecords')
 
 write_image_annotation_pairs_to_tfrecord(filename_pairs=overall_train_image_annotation_filename_pairs,
-                                         tfrecords_filename='3DBuilderVessel_augmented_train.tfrecords')
+                                         tfrecords_filename='3DBuilderVessel_augmented_train_withoutNoise.tfrecords')

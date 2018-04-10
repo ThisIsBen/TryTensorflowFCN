@@ -15,8 +15,6 @@ sys.path.append("models/slim/")
 
 #fcn_16s_checkpoint_path = 'TrainedModel\fcn_8s\fcn_8s_checkpoint\model_fcn8s_final.ckpt'
 
-fcn_16s_checkpoint_path = \
-    'TrainedModel/fcn_8s/fcn_8s_checkpoint/model_fcn8s_final.ckpt'
 
 
 #os.environ["CUDA_VISIBLE_DEVICES"] = '1'
@@ -31,9 +29,9 @@ from tf_image_segmentation.utils.pascal_voc import pascal_segmentation_lut
 
 number_of_classes = 21
 
-image_filename = 'me2.jpg'
-#image_filename = 'vessel/infatvessel14.jpg'
-#image_filename = 'small_cat.jpg'
+#image_filename = '3DBuilderVesselSemanticSegDataSet/3DBuilderVesselRecognition/JPEGImages/croppedImage_a_vm_2166_1.jpg'
+image_filename = 'vessel/infatvessel2.jpg'
+#image_filename = 'me2.jpg'
 
 image_filename_placeholder = tf.placeholder(tf.string)
 
@@ -65,9 +63,14 @@ with tf.Session() as sess:
     
     sess.run(initializer)
 
-    saver.restore(sess, "TrainedModel/fcn_8s/fcn_8s_checkpoint/model_fcn8s_final.ckpt")
+    #saver.restore(sess, "TrainedModel/fcn_8s/fcn_8s_checkpoint/model_fcn8s_final.ckpt")
     
-    #saver.restore(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel.ckpt")
+    #saver.restore(sess,  "./3DBuilderVesselModelForFCN/model_fcn8s_3DVessel.ckpt")
+   
+    #based on Pascal trained FCN16
+    #saver.restore(sess,  "./3DBuilderVesselModelForFCN/model_fcn8s_3DVessel_BasedOnPascalFCN16.ckpt")
+    
+    saver.restore(sess,  "./3DBuilderVesselModelForFCN/model_fcn8s_3DVessel_FCN32Momen.ckpt")
     
     
     
@@ -101,7 +104,7 @@ eroding_countour = negative_mask * prediction_mask
 
 eroding_countour_img = np.dstack((eroding_countour, ) * 3)
 
-cropped_object[eroding_countour_img] = 100 #gray value:0~255 black=> white
+cropped_object[eroding_countour_img] = 255 #gray value:0~255 black=> white
 
 png_transparancy_mask = np.uint8(prediction_mask * 255)
 
@@ -115,4 +118,4 @@ png_array[:, :, 3] = png_transparancy_mask
 
 io.imshow(cropped_object)
 
-io.imsave('sticker_cat.png', png_array)
+io.imsave('sticker_vessel.png', png_array)
