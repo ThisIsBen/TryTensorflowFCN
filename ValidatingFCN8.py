@@ -26,7 +26,8 @@ from tf_image_segmentation.utils.visualization import visualize_segmentation_ada
 
 pascal_voc_lut = pascal_segmentation_lut()
 
-tfrecord_filename = '3DBuilderVessel_augmented_val.tfrecords'
+tfrecord_filename = '3DBuilderVessel_augmented_val_withoutNoise.tfrecords'
+
 
 #tfrecord_filename = 'pascal_augmented_val.tfrecords'
 

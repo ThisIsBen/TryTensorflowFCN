@@ -29,10 +29,11 @@ from tf_image_segmentation.utils.pascal_voc import pascal_segmentation_lut
 
 #number_of_classes = 21
 number_of_classes = 2
-
+fcn_8s_checkpoint_path='./3DBuilderVesselModelForFCN/FCN8_Model/model_fcn8s_3DVessel_30Epochs_3Classes.ckpt'
 #image_filename = '3DBuilderVesselSemanticSegDataSet/3DBuilderVesselRecognition/JPEGImages/croppedImage_a_vm_2166_1.jpg'
 image_filename = 'vessel/infatvessel2.jpg'
-#image_filename = 'me2.jpg'
+#image_filename='vessel/croppedImage_a_vm_2178_2.jpg'
+#image_filename = 'me.jpg'
 
 image_filename_placeholder = tf.placeholder(tf.string)
 
@@ -71,7 +72,7 @@ with tf.Session() as sess:
     #based on Pascal trained FCN16
     #saver.restore(sess,  "./3DBuilderVesselModelForFCN/model_fcn8s_3DVessel_BasedOnPascalFCN16.ckpt")
     
-    saver.restore(sess,  "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_30Epochs_3Classes.ckpt")
+    saver.restore(sess, fcn_8s_checkpoint_path)
     
     
     
@@ -84,11 +85,28 @@ with tf.Session() as sess:
     io.show()
 
 
+
+
+
 # Eroding countour
 
 import skimage.morphology
 
-prediction_mask = (pred_np.squeeze() == 8)
+#specify the class name of the target whose contour is going to be cropped
+#crop contour of vessel
+targetClassName='vessel'
+
+
+pascal_voc_lut = pascal_segmentation_lut()
+
+#reverse the key(class label) and value(class name) in dict pascal_voc_lut
+inv_pascal_voc_lut = {v: k for k, v in pascal_voc_lut.items()}
+
+#get the class label of the target object
+targetClassLabel=inv_pascal_voc_lut[targetClassName]
+
+#use the class label of the target object as the mask to crop the FCN recognized target out
+prediction_mask = (pred_np.squeeze() == targetClassLabel)
 
 # Let's apply some morphological operations to
 # create the contour for our sticker
@@ -119,4 +137,4 @@ png_array[:, :, 3] = png_transparancy_mask
 
 io.imshow(cropped_object)
 
-io.imsave('sticker_vessel.png', png_array)
+io.imsave('vessel/sticker_vessel.png', png_array)
