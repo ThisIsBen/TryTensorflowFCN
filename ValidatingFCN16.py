@@ -12,7 +12,7 @@ sys.path.append("models/slim/")
 
 #fcn_16s_checkpoint_path = './3DBuilderVesselModelForFCN/model_fcn16s_3DVessel_Momen.ckpt'
 
-fcn_16s_checkpoint_path = './3DBuilderVesselModelForFCN/model_fcn16s_3DVessel_70Epochs.ckpt'
+fcn_16s_checkpoint_path = './3DBuilderVesselModelForFCN/FCN16_Model/model_fcn16s_3DVessel_30Epochs_3Classes.ckpt'
 
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
@@ -33,7 +33,8 @@ tfrecord_filename = '3DBuilderVessel_augmented_val_withoutNoise.tfrecords'
 
 #numOfValidatingImage=525
 numOfValidatingImage=384
-number_of_classes = 21
+#number_of_classes = 21
+number_of_classes = 2
 
 filename_queue = tf.train.string_input_producer(
     [tfrecord_filename], num_epochs=1)
@@ -72,7 +73,7 @@ with tf.Session() as sess:
     
     sess.run(initializer)
 
-    saver.restore(sess, "./3DBuilderVesselModelForFCN/model_fcn16s_3DVessel_70Epochs.ckpt")
+    saver.restore(sess, fcn_16s_checkpoint_path)
     
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(coord=coord)

@@ -33,12 +33,13 @@ from tf_image_segmentation.utils.augmentation import (distort_randomly_image_col
 #epochs=3 #3 10 outofRange fail
 
 
-epochs=70
+
 
 '''
-epochs=1
-'''
+epochs=70
 vesselBatch_size=1
+'''
+
 
 '''
 vesselBatch_size=5
@@ -46,18 +47,29 @@ vesselBatch_size=5
 
 '''
 numOfTrainingImage=1545
-'''
+
 numOfTrainingImage=int(1545/vesselBatch_size) # it works
 gpu_memory_fraction=0.7 #0.7
 capacity=3000# 3000 OutOFRangeError
 #image_train_size = [384, 384]#size must be [384, 384] or error will occurs
 image_train_size = [70, 70] #it has to be larger than [60,60],which is set in training FCN32
 number_of_classes = 21
-
+'''
 #trying to train pascal dataset
 '''
 tfrecord_filename = 'pascal_augmented_train.tfrecords'
 '''
+
+epochs=30
+vesselBatch_size=32
+numOfTrainingImage=1545
+numOfTrainingIteration=int(numOfTrainingImage/vesselBatch_size)
+gpu_memory_fraction=0.7 #restrict the program from using GPU memory up to 70%.
+image_train_size = [224, 224 ] #[384, 384]
+number_of_classes = 2 #because Pascal dataset has 21 classes
+
+base_lr=0.000001 #default lr
+
 
 #trying to train 3DBuilderVesselSemanticSeg dataset
 tfrecord_filename = '3DBuilderVessel_augmented_train_withoutNoise.tfrecords'
@@ -70,8 +82,8 @@ class_labels = list(pascal_voc_lut.keys())
 fcn_32s_checkpoint_path = './3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_70Epochs.ckpt'
 '''
 
-#fcn_32s_checkpoint_path = './3DBuilderVesselModelForFCN/model_fcn32s_3DVessel.ckpt'
-fcn_32s_checkpoint_path = './3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_70Epochs.ckpt'
+
+fcn_32s_checkpoint_path = './3DBuilderVesselModelForFCN/FCN32_Model/model_fcn32s_3DVessel_30Epochs_3Classes.ckpt'
 
 '''
 filename_queue = tf.train.string_input_producer(
@@ -101,7 +113,7 @@ image_batch, annotation_batch = tf.train.shuffle_batch( [resized_image, resized_
 '''
 image_batch, annotation_batch = tf.train.shuffle_batch( [resized_image, resized_annotation],
                                              batch_size=vesselBatch_size,
-                                             capacity=capacity,
+                                             capacity=3000,
                                              num_threads=2,
                                              min_after_dequeue=1000)
 
@@ -130,7 +142,7 @@ probabilities = tf.nn.softmax(upsampled_logits_batch)
 
 
 with tf.variable_scope("adam_vars"):
-    train_step = tf.train.AdamOptimizer(learning_rate=0.00000001).minimize(cross_entropy_sum)
+    train_step = tf.train.AdamOptimizer(learning_rate=base_lr).minimize(cross_entropy_sum)
 
 
 #adam_optimizer_variables = slim.get_variables_to_restore(include=['adam_vars'])
@@ -189,29 +201,31 @@ with tf.Session(config=config)  as sess:
    
     
     # Let's read off 3 batches just for example
-    for i in range(numOfTrainingImage * epochs):
+    for i in range(numOfTrainingIteration * epochs):
     
         cross_entropy, summary_string, _ = sess.run([ cross_entropy_sum,
                                                       merged_summary_op,
                                                       train_step ])
 
-        summary_string_writer.add_summary(summary_string, numOfTrainingImage * epochs + i)
+        summary_string_writer.add_summary(summary_string, numOfTrainingIteration * epochs + i)
         
         print("step :" + str(i) + " Loss: " + str(cross_entropy))
         
-        #append cross entropy of each step to the accumulation list for plot after training 
-        if i%25==0: #there will be 4326 cross entropy data be added
+        #record cross entropy loss  when finishing each epoch
+        if i % numOfTrainingIteration == 0: 
+            #append cross entropy of each epoch to the accumulation list for plot after training
             crossEntropyAccumList.append(cross_entropy)
         
-        if i % numOfTrainingImage == 0:
-            save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/model_fcn16s_3DVessel_70Epochs.ckpt")
+        #save model when finishing each 10 epochs
+        if i % (numOfTrainingIteration*10) == 0:
+            save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/FCN16_Model/model_fcn16s_3DVessel_30Epochs_3Classes_epochNo"+str(i/(numOfTrainingIteration*10)+1)+".ckpt")
             print("Model saved in file: %s" % save_path)
             
         
     coord.request_stop()
     coord.join(threads)
     
-    save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/model_fcn16s_3DVessel_70Epochs.ckpt")
+    save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/FCN16_Model/model_fcn16s_3DVessel_30Epochs_3Classes.ckpt")
     print("Model saved in file: %s" % save_path)
       
 summary_string_writer.close()

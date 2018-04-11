@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 sys.path.append("tf-image-segmentation/")
 sys.path.append("models/slim/")
 
-fcn_8s_checkpoint_path = './3DBuilderVesselModelForFCN/model_fcn8s_3DVessel.ckpt'
+fcn_8s_checkpoint_path = './3DBuilderVesselModelForFCN/FCN8_Model/model_fcn8s_3DVessel_30Epochs_3Classes.ckpt'
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
@@ -31,7 +31,7 @@ tfrecord_filename = '3DBuilderVessel_augmented_val.tfrecords'
 #tfrecord_filename = 'pascal_augmented_val.tfrecords'
 
 #numOfValidatingImage=525
-numOfValidatingImage=525
+numOfValidatingImage=384
 number_of_classes = 2
 
 
@@ -76,7 +76,7 @@ with tf.Session() as sess:
     
     #saver.restore(sess, "./ModelForFcn/model_fcn8s_final.ckpt")
     
-    saver.restore(sess, "./TrainedModel/fcn_8s/fcn_8s_checkpoint/model_fcn8s_final.ckpt")
+    saver.restore(sess, fcn_8s_checkpoint_path)
     
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(coord=coord)
