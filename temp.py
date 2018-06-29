@@ -29,10 +29,10 @@ from tf_image_segmentation.utils.pascal_voc import pascal_segmentation_lut
 
 #number_of_classes = 21
 number_of_classes = 2
-fcn_8s_checkpoint_path='./3DBuilderVesselModelForFCN/FCN8_Model/model_fcn8s_3DVessel_30Epochs_3Classes.ckpt'
+fcn_8s_checkpoint_path='./3DBuilderVesselModelForFCN/FCN8_Model/model_fcn8s_3DVessel_30Epochs_withoutALLFC_3Classes.ckpt'
 #image_filename = '3DBuilderVesselSemanticSegDataSet/3DBuilderVesselRecognition/JPEGImages/croppedImage_a_vm_2166_1.jpg'
-image_filename = 'vessel/infatvessel2.jpg'
-#image_filename='vessel/croppedImage_a_vm_2178_2.jpg'
+#image_filename = 'vessel/infatvessel2.jpg'
+image_filename='vessel/wholeVessel3.jpg'
 #image_filename = 'me.jpg'
 
 image_filename_placeholder = tf.placeholder(tf.string)

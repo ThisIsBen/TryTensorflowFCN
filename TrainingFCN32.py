@@ -42,15 +42,18 @@ from tf_image_segmentation.utils.augmentation import (distort_randomly_image_col
                                                       flip_randomly_left_right_image_with_annotation,
                                                   scale_randomly_image_with_annotation_with_fixed_size_output)
 
-epochs=30
-vesselBatch_size=32
+epochs=300
+vesselBatch_size=32 #32 #batch size has to be smaller when image size gets larger
+                    #or GPU OOM will be raised.
 '''
 vesselBatch_size=1
 '''
-numOfTrainingImage=1545
+#numOfTrainingImage=1545
+numOfTrainingImage=4105 #with Translation
 numOfTrainingIteration=int(numOfTrainingImage/vesselBatch_size)
 gpu_memory_fraction=0.7 #restrict the program from using GPU memory up to 70%.
 image_train_size = [224, 224 ] #[384, 384]
+#image_train_size = [384, 384 ] #[384, 384]
 number_of_classes = 2 #because Pascal dataset has 21 classes
 
 base_lr=0.000001 #default lr
@@ -66,8 +69,8 @@ tfrecord_filename = 'pascal_augmented_train.tfrecords'
 '''
    
 #trying to train 3DBuilderVesselSemanticSeg dataset
-tfrecord_filename = '3DBuilderVessel_augmented_train_withoutNoise.tfrecords'
-
+#tfrecord_filename = '3DBuilderVessel_augmented_train_withoutNoise.tfrecords'
+tfrecord_filename = '3DBuilderVessel_augmented_train_with_Rand_Translation.tfrecords'
 
 pascal_voc_lut = pascal_segmentation_lut()
 class_labels = list(pascal_voc_lut) #[0,1,2~20]
@@ -179,6 +182,9 @@ with tf.Session(config=config)  as sess:
     #create cross entropy accumulation list for plot after training 
     crossEntropyAccumList=[]
     
+    #save model for each n epochs
+    saveModerForEachN=50
+    
     for i in range(numOfTrainingIteration * epochs   ):
         
     
@@ -199,16 +205,16 @@ with tf.Session(config=config)  as sess:
             #append cross entropy of each epoch to the accumulation list for plot after training
             crossEntropyAccumList.append(cross_entropy)
         
-        #save model when finishing each 10 epochs
-        if i % (numOfTrainingIteration*10) == 0:
-            save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_30Epochs_3Classes_ValidPad_epochNo"+str(i/(numOfTrainingIteration*10)+1)+".ckpt")
+        #save model when finishing each 100 epochs
+        if i % (numOfTrainingIteration*saveModerForEachN) == 0:
+            save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/FCN32_Model/300Epochs/model_fcn32s_3DVessel_300Epochs_with_Rand_TranslationData_epochNo"+str(i/(numOfTrainingIteration*saveModerForEachN)+1)+".ckpt")
             print("Model saved in file: %s" % save_path)
         
     coord.request_stop()
     coord.join(threads)
     
     #save model when training is over.
-    save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_30Epochs_3Classes_ValidPad.ckpt")
+    save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/FCN32_Model/300Epochs/model_fcn32s_3DVessel_300Epochs_with_Rand_TranslationData.ckpt")
     print("Model saved in file: %s" % save_path)
     
 summary_string_writer.close()

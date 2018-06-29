@@ -13,7 +13,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 #pascal_root = 'D:\\VOCtrainval_11-May-2012\\VOCdevkit\\VOC2012'
 
-pascal_root = 'D:\\TryTensorflowFCN\\3DBuilderVesselSemanticSegDataSet\\3DBuilderVesselRecognition'
+pascal_root = 'D:\\TryTensorflowFCN\\3DBuilderVesselSemanticSegDataSet\\3DBuilderVesselRecognition_RandTranslation'
 
 #pascal_berkeley_root = 'D:\\VOCtrainval_11-May-2012\\benchmark' #empty benchmark folder
 
@@ -40,8 +40,17 @@ write_image_annotation_pairs_to_tfrecord(filename_pairs=overall_train_image_anno
                                          tfrecords_filename='pascal_augmented_train.tfrecords')
 '''
 
+
+'''
 write_image_annotation_pairs_to_tfrecord(filename_pairs=overall_val_image_annotation_filename_pairs,
                                          tfrecords_filename='3DBuilderVessel_augmented_val_withoutNoise.tfrecords')
 
 write_image_annotation_pairs_to_tfrecord(filename_pairs=overall_train_image_annotation_filename_pairs,
                                          tfrecords_filename='3DBuilderVessel_augmented_train_withoutNoise.tfrecords')
+'''
+
+write_image_annotation_pairs_to_tfrecord(filename_pairs=overall_val_image_annotation_filename_pairs,
+                                         tfrecords_filename='3DBuilderVessel_augmented_val_with_Rand_Translation.tfrecords')
+
+write_image_annotation_pairs_to_tfrecord(filename_pairs=overall_train_image_annotation_filename_pairs,
+                                         tfrecords_filename='3DBuilderVessel_augmented_train_with_Rand_Translation.tfrecords')

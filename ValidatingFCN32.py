@@ -35,11 +35,10 @@ pascal_voc_lut = pascal_segmentation_lut()
 
 print(pascal_voc_lut)
 tfrecord_filename = '3DBuilderVessel_augmented_val_withoutNoise.tfrecords'
-
+#tfrecord_filename = '3DBuilderVessel_augmented_val_withTranslation.tfrecords'
      
 numOfValidatingImage=384
-#numOfValidatingImage=525
-#number_of_classes = 21
+#numOfValidatingImage=989 # with Translation 
 number_of_classes = 2
 
 filename_queue = tf.train.string_input_producer(
@@ -85,7 +84,7 @@ with tf.Session() as sess:
 
     #saver.restore(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_withoutNoise.ckpt")
     
-    saver.restore(sess, "./3DBuilderVesselModelForFCN/model_fcn32s_3DVessel_30Epochs_3Classes_ValidPad.ckpt")
+    saver.restore(sess, "./3DBuilderVesselModelForFCN/FCN32_Model/300Epochs/model_fcn32s_3DVessel_300Epochs_with_Rand_TranslationData.ckpt")
     
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(coord=coord)

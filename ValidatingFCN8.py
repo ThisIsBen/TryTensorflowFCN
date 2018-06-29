@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 sys.path.append("tf-image-segmentation/")
 sys.path.append("models/slim/")
 
-fcn_8s_checkpoint_path = './3DBuilderVesselModelForFCN/FCN8_Model/model_fcn8s_3DVessel_30Epochs_3Classes.ckpt'
+fcn_8s_checkpoint_path = './3DBuilderVesselModelForFCN/FCN8_Model/1000epochs/model_fcn8s_3DVessel_1000Epochs_withoutALLFC_3Classes.ckpt'
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 

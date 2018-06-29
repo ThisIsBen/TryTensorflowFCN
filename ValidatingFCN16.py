@@ -12,7 +12,7 @@ sys.path.append("models/slim/")
 
 #fcn_16s_checkpoint_path = './3DBuilderVesselModelForFCN/model_fcn16s_3DVessel_Momen.ckpt'
 
-fcn_16s_checkpoint_path = './3DBuilderVesselModelForFCN/FCN16_Model/model_fcn16s_3DVessel_30Epochs_3Classes.ckpt'
+fcn_16s_checkpoint_path = './3DBuilderVesselModelForFCN/FCN16_Model/300Epochs/model_fcn16s_3DVessel_300Epochs_with_Rand_TranslationData.ckpt'
 
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
