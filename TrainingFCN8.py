@@ -43,7 +43,7 @@ vesselBatch_size=1
 '''
 numOfTrainingImage=1545
 '''
-
+ 
 '''
 epochs=1
 vesselBatch_size=5
@@ -57,14 +57,14 @@ number_of_classes = 21
 '''
 tfrecord_filename = 'pascal_augmented_train.tfrecords'
 '''
-epochs=10
+epochs=300
 vesselBatch_size=32 #32 #batch size has to be smaller when image size gets larger
                     #or GPU OOM will be raised.
 '''
 vesselBatch_size=1
 '''
 #numOfTrainingImage=1545
-numOfTrainingImage=4096 #with Random Translation #4173 #4105
+numOfTrainingImage=4105 #with Random Translation #4173 #4105
 numOfTrainingIteration=int(numOfTrainingImage/vesselBatch_size)
 gpu_memory_fraction=0.7 #restrict the program from using GPU memory up to 70%.
 image_train_size = [224, 224 ] #[384, 384]
@@ -74,14 +74,15 @@ number_of_classes = 2 #because Pascal dataset has 21 classes
 base_lr=0.000001 #default lr
 
 #trying to train 3DBuilderVesselSemanticSeg dataset
-tfrecord_filename = '3DBuilderVessel_augmented_train_withoutNoise.tfrecords'
+#tfrecord_filename = '3DBuilderVessel_augmented_train_withoutNoise.tfrecords'
+tfrecord_filename ='3DBuilderVessel_augmented_train_with_Rand_Translation.tfrecords'
 
 pascal_voc_lut = pascal_segmentation_lut()
 class_labels = list(pascal_voc_lut.keys())
 
 #based on pascal trained FCN16
 #fcn_16s_checkpoint_path = './PascalModelForFcn/Pascal_fcn_16s_checkpoint/model_fcn16s_final.ckpt'
-
+                            
 fcn_16s_checkpoint_path = './3DBuilderVesselModelForFCN/FCN16_Model/300Epochs/model_fcn16s_3DVessel_300Epochs_with_Rand_TranslationData.ckpt'
 
 filename_queue = tf.train.string_input_producer(
@@ -203,13 +204,13 @@ with tf.Session(config=config)  as sess:
        
         #save model when finishing each 10 epochs
         if i % (numOfTrainingIteration*saveModerForEachN) == 0:
-            save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/FCN8_Model/300epochs/model_fcn8s_3DVessel_300Epochs_with_Rand_TranslationData_epochNo"+str(i/(numOfTrainingIteration*saveModerForEachN)+1)+".ckpt")
+            save_path = saver.save(sess, "./3DBuilderVesselModelForFCN/FCN8_Model/300Epochs/model_fcn8s_3DVessel_300Epochs_with_Rand_TranslationData_epochNo"+str(i/(numOfTrainingIteration*saveModerForEachN)+1)+".ckpt")
             print("Model saved in file: %s" % save_path)
             
         
     coord.request_stop()
     coord.join(threads)
-    
+                                 
     save_path = saver.save(sess,"./3DBuilderVesselModelForFCN/FCN8_Model/300Epochs/model_fcn8s_3DVessel_300Epochs_with_Rand_TranslationData.ckpt")
     print("Model saved in file: %s" % save_path)
     
